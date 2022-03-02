@@ -1,5 +1,4 @@
 import random
-
 import re
 import json
 import logging
@@ -15,8 +14,11 @@ logger = logging.getLogger(__name__)
 change_time_pattern = r'^([Пп]оменяй |)время (\d{1,2}:\d{1,2}) (\d{1,2}:\d{1,2})'
 change_time_and_day_pattern = r'^([Пп]оменяй) (\S+) (\d{1,2}:\d{1,2}) (\S+)'
 
+change_time_pattern_error = r'(\S+) (\S+) (\S+)'
+change_day_pattern_error = r'^([Пп]оменяй) (\S+)'
+
 day_names_eng = {}
-with open('raps_eng.json', 'r', encoding='utf-8') as day_names_eng_file:
+with open('rasp_eng.json', 'r', encoding='utf-8') as day_names_eng_file:
     day_names_eng = json.load(day_names_eng_file)
     #############################################################
 raspisanie_data = {}
@@ -25,10 +27,11 @@ with open('raspisanie.json', 'r', encoding='utf-8') as rasp_file:
 
 
 def save_rasp():
-    global raspisanie_data
+    global raspisanie_data, day_names_eng
     with open('raspisanie.json', 'w', encoding='utf-8') as rasp_file_d:
         json.dump(raspisanie_data, rasp_file_d, ensure_ascii=False)
-
+    with open('rasp_eng.json', 'r', encoding='utf-8') as day_names_eng_file:
+        day_names_eng = json.load(day_names_eng_file)
 
 # Define a few command handlers. These usually take the two arguments update and
 # context.
@@ -38,7 +41,7 @@ def start(update: Update, context: CallbackContext):
     update.message.reply_markdown_v2(fr'Hi {user.mention_markdown_v2()}\!', reply_markup=ForceReply(selective=True))
     update.message.reply_text('-', reply_markup=ReplyKeyboardMarkup(
         [
-            ['/monday', '/thusday', '/wednesday'],
+            ['/monday', '/thursday', '/wednesday'],
             ['/thursday', '/friday'],
         ],
         one_time_keyboard=True,
@@ -58,13 +61,29 @@ def help_command(update: Update, context: CallbackContext):
         /Wednesday-расписание на среду
         /Thursday-расписание на четверг
         /Friday-расписание на пятницу
+        Шаблоны:
+        *Поменяй время - если вы хотите поменять время  в расписании. Пример:(Поменяй время 8:30)
+        *Поменяй - если вы хотите поменять день, время и урок в расписании. Пример:(Поменяй понедельник 8:30 физика)
         """
     )
 
 
 def info_commad(update: Update, context: CallbackContext):
     update.message.reply_text(
-        'info:\ncommand:\n/start\n/info\n/help\n/Monday-расписание на понедельник\n/Tuesday-расписание на вторник\n/Wednesday-расписание на среду\n/Thursday-расписание на четверг\n/Friday-расписание на пятницу')
+        """
+        command:
+        /start
+        /info
+        /help
+        /Monday-расписание на понедельник
+        /Tuesday-расписание на вторник
+        /Wednesday-расписание на среду
+        /Thursday-расписание на четверг
+        /Friday-расписание на пятницу
+        Шаблоны:
+        *Поменяй время - если вы хотите поменять время  в расписании. Пример:(Поменяй время 8:30)
+        *Поменяй - если вы хотите поменять день, время и урок в расписании. Пример:(Поменяй понедельник 8:30 физика)
+        """)
 
 
 def greeting_a_new_user(update: Update, context: CallbackContext):
@@ -74,6 +93,11 @@ def greeting_a_new_user(update: Update, context: CallbackContext):
 
 
 def raspisanie(update: Update, context: CallbackContext):
+    output = re.findall(change_time_pattern_error, update.message.text)
+    if len(output) != 0:
+        update.message.reply_text("неправельный ввод")
+        return
+
     key = update.message.text[1:] if update.message.text.startswith('/') else update.message.text
     for message in check_resp(key):
         update.message.reply_text(message)
@@ -111,35 +135,45 @@ def echo(update: Update, context: CallbackContext):
 
 
 def foto(update, context: CallbackContext):
-    reply_command = ["cool foto", "good foto", "+", "beautiful photo", "nice foto"]
+    reply_command = ["cool foto", "good foto", "beautiful photo", "nice foto"]
     update.message.reply_text(random.choice(reply_command))
 
+def men_day(update: Update, context: CallbackContext):
+    global raspisanie_data, day_names_eng
 
-def new_rasp(update: Update, context: CallbackContext):
-    pass
-
-
-def men_day(update: Update, context: CallbackContext, message):
-    global raspisanie_data, day_rasp
     text = update.message.text
     output = re.findall(change_time_and_day_pattern, text)
-    print(output)
-    _, day_change, lesson_time, to_lesson = output[0]
-    if raspisanie_data[day_change] != raspisanie_data:
-        print('error')
+    if len(output) != 1:
+        update.message.reply_text("не правильный ввод")
+        return
 
+    _, dayName, timeName, lessonName = output[0]
 
+    lessonName = lessonName[0].upper() + lessonName[1:].lower()
+    key = dayName[0].upper() + dayName[1:].lower()
+    eng_key = day_names_eng.get(key)
     if eng_key is not None:
         key = eng_key
-        eng_key = day_names_eng.get(key)
+
     day_rasp = raspisanie_data.get(key)
     if day_rasp is None:
-        messages.append("такого дня недели не существует")
-        return messages
-        # for to_lesson in dict(raspisanie_data[day_change]).keys():
-        #     if to_lesson in day_change:
-        #         raspisanie_data[day_change] = raspisanie_data[day_change][lesson_time]
+        update.message.reply_text("такого дня недели не существует")
+        return
 
+    isChanged = False
+    for timeRasp in raspisanie_data[key].keys():
+        if timeName not in timeRasp: continue
+        raspisanie_data[key][timeRasp] = lessonName
+        isChanged = True
+        break
+
+    if isChanged is not isChanged:
+        update.message.reply_text("такого времени не существует")
+        return
+
+
+    save_rasp()
+    update.message.reply_text("Ok")
 
 def men_time(update: Update, context: CallbackContext, encoding='utf-8'):
     global raspisanie_data
@@ -147,7 +181,8 @@ def men_time(update: Update, context: CallbackContext, encoding='utf-8'):
     output = re.findall(change_time_pattern, text)
 
     if len(output) != 1:
-        print('error')
+        # TODO: send message to user about invalid message
+        update.message.reply_text("такого времени не существует")
         return
 
     _, from_time, to_time = output[0]
@@ -157,6 +192,8 @@ def men_time(update: Update, context: CallbackContext, encoding='utf-8'):
             if from_time in time_name:
                 raspisanie_data[day][time_name.replace(from_time, to_time)] = raspisanie_data[day][time_name]
                 del raspisanie_data[day][time_name]
+
+
 
     save_rasp()
     update.message.reply_text("Ok")
