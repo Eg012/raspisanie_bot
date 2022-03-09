@@ -219,11 +219,11 @@ if __name__ == '__main__':
 
     dispatcher.add_handler(MessageHandler(Filters.photo, foto))
     # Start the Bot
-    PORT = int(os.environ.get('PORT', '8443'))
+    PORT = int(os.environ.get('PORT', '80'))
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
                           url_path=TOKEN,
-                          webhook_url=f"https://hidden-coast-63167.herokuapp.com/{TOKEN}"
+                          webhook_url=f"http://hidden-coast-63167.herokuapp.com/{TOKEN}"
                           )
 
     #updater.bot.setWebhook('https://hidden-coast-63167.herokuapp.com/' + TOKEN)
