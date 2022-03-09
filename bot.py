@@ -203,7 +203,7 @@ def men_time(update: Update, context: CallbackContext, encoding='utf-8'):
 if __name__ == '__main__':
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater(TOKEN)
+    updater = Updater(TOKEfN)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
@@ -220,6 +220,7 @@ if __name__ == '__main__':
     dispatcher.add_handler(MessageHandler(Filters.photo, foto))
     # Start the Bot
     PORT = int(os.environ.get('PORT', '8443'))
+    updater = Updater(TOKEN)
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
                           url_path=TOKEN,
