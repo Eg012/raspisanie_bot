@@ -60,7 +60,7 @@ def main():
     dp.add_error_handler(error)
 
     # Start the Bot
-    updater.start_webhook(listen="localhost",
+    updater.start_webhook(listen="0.0.0.0",
                           port=8443,
                           url_path=TOKEN)
     updater.bot.setWebhook('https://hidden-coast-63167.herokuapp.com' + TOKEN)
