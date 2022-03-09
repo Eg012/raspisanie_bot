@@ -2,6 +2,7 @@ import random
 import re
 import json
 import logging
+import os
 from telegram import Update, ForceReply, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
@@ -32,6 +33,7 @@ def save_rasp():
         json.dump(raspisanie_data, rasp_file_d, ensure_ascii=False)
     with open('rasp_eng.json', 'r', encoding='utf-8') as day_names_eng_file:
         day_names_eng = json.load(day_names_eng_file)
+
 
 # Define a few command handlers. These usually take the two arguments update and
 # context.
@@ -138,6 +140,7 @@ def foto(update, context: CallbackContext):
     reply_command = ["cool foto", "good foto", "beautiful photo", "nice foto"]
     update.message.reply_text(random.choice(reply_command))
 
+
 def men_day(update: Update, context: CallbackContext):
     global raspisanie_data, day_names_eng
 
@@ -171,9 +174,9 @@ def men_day(update: Update, context: CallbackContext):
         update.message.reply_text("такого времени не существует")
         return
 
-
     save_rasp()
     update.message.reply_text("Ok")
+
 
 def men_time(update: Update, context: CallbackContext, encoding='utf-8'):
     global raspisanie_data
@@ -193,17 +196,9 @@ def men_time(update: Update, context: CallbackContext, encoding='utf-8'):
                 raspisanie_data[day][time_name.replace(from_time, to_time)] = raspisanie_data[day][time_name]
                 del raspisanie_data[day][time_name]
 
-
-
     save_rasp()
     update.message.reply_text("Ok")
 
-
-# def clear_command(message):
-#     message(chat_id, message_id)
-
-
-# def video_command(update: Update, context: CallbackContext):
 
 if __name__ == '__main__':
     """Start the bot."""
@@ -223,8 +218,10 @@ if __name__ == '__main__':
         MessageHandler(Filters.text & (~Filters.regex("^поменяй время")) & (~Filters.regex('^поменяй')), raspisanie))
 
     dispatcher.add_handler(MessageHandler(Filters.photo, foto))
-    # dispatcher.add_handler(MessageHandler(Filters.text, greeting_a_new_user))
-    # dispatcher.add_handler(CommandHandler(Filters.regex, clear_command))
     # Start the Bot
-    updater.start_polling()
+    PORT = int(os.environ.get('PORT', 5000))
+    updater.start_webhook(listen="0.0.0.0",
+                          port=int(PORT),
+                          url_path=TOKEN)
+    updater.bot.setWebhook('https://hidden-coast-63167.herokuapp.com/' + TOKEN)
     updater.idle()
