@@ -219,7 +219,7 @@ if __name__ == '__main__':
 
     dispatcher.add_handler(MessageHandler(Filters.photo, foto))
     # Start the Bot
-    PORT = int(os.environ.get('PORT', 5000))
+    PORT = int(os.environ.get('PORT', 80))
     updater.start_webhook(listen="0.0.0.0",
                           port=int(PORT),
                           url_path=TOKEN)
