@@ -61,7 +61,7 @@ def main():
 
     # Start the Bot
     updater.start_webhook(listen="0.0.0.0",
-                          port=int(os.environ.get('PORT', '88')),
+                          port=int(os.environ.get('PORT', '8443')),
                           url_path=TOKEN)
     updater.bot.setWebhook('https://hidden-coast-63167.herokuapp.com' + TOKEN)
 
