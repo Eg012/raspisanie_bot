@@ -219,5 +219,9 @@ if __name__ == '__main__':
 
     dispatcher.add_handler(MessageHandler(Filters.photo, foto))
     # Start the Bot
-    updater.start_polling()
+    PORT=int(os.environ.get('PORT', '8443'))
+    updater.start_webhook(listen="0.0.0.0",
+                          port=PORT,
+                          url_path=TOKEN,
+                          webhook_url="https://aspisanie-bot-101.herokuapp.com/" + TOKEN)
     updater.idle()
