@@ -8,7 +8,6 @@ import logging
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
 
-PORT = int(os.environ.get('PORT', '8443'))
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -62,7 +61,7 @@ def main():
 
     # Start the Bot
     updater.start_webhook(listen="0.0.0.0",
-                          port=PORT,
+                          port=int(os.environ.get('PORT', '88')),
                           url_path=TOKEN)
     updater.bot.setWebhook('https://hidden-coast-63167.herokuapp.com' + TOKEN)
 
