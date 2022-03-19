@@ -12,10 +12,10 @@ class Train:
 
     @staticmethod
     def random():
-        tos = ['Туапсе', 'Сочи', 'Симферопаль']
+        to = ['Туапсе', 'Сочи', 'Симферопаль']
         numbers = [1, 2, 3]
         time = f'{random.randint(0, 23)}:{random.randint(0, 59)} '
-        return Train(dest=random.choice(tos),
+        return Train(dest=random.choice(to),
                      number=random.choice(numbers),
                      time_train=time
                      )
